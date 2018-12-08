@@ -1,43 +1,48 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 08.12.2018 20:26:10
--- Design Name: 
--- Module Name: lighting - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity lighting is
---  Port ( );
+
+port (
+    CLK_50MHz: in std_logic;
+    LED: out std_logic
+);
+
 end lighting;
 
 architecture Behavioral of lighting is
 
-begin
+    signal Counter: std_logic_vector(26 downto 0);
+    
+    signal hz1: std_logic;
+    constant clk_val : integer := 50000000;
+    
+    constant t0h : real := 35.0e-6;
+    constant t1h : real := 0.9e-6;
+    constant t0l : real := 0.9e-6;
+    constant t1l : real := 35.0e-6;
+    constant res : real := 50.0e-6;
+    
+    signal data: std_logic_vector(24 downto 0);
 
+    begin
+
+        Prescaler: process(CLK_50MHz)
+        begin
+
+            if rising_edge(CLK_50MHz) then
+                if Counter < clk_val then
+                    Counter <= Counter + 1;
+                else
+                    hz1 <= not hz1 ;
+                    Counter <= (others => '0');
+                end if;
+            end if;
+      
+        end process Prescaler;
+
+        LED <= hz1;
 
 end Behavioral;
