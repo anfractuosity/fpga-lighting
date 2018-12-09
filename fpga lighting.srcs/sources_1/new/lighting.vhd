@@ -50,7 +50,7 @@ architecture Behavioral of lighting is
                   Counter <= Counter + 1;
                else
                
-                  --Counter <= (others => '0');          
+                  Counter <= (others => '0');          
                   data2 <= rotate_right(data2,1);
                   LED <=  data2(0);
                   --step  <= step + 1;
