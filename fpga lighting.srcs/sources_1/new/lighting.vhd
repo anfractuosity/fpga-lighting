@@ -4,7 +4,8 @@ use IEEE.NUMERIC_STD.ALL;
 use IEEE.STD_LOGIC_1164.ALL;
 --use IEEE.STD_LOGIC_ARITH.ALL;
 use IEEE.STD_LOGIC_UNSIGNED.ALL;
-
+use IEEE.MATH_REAL.ALL;
+use IEEE.MATH_REAL;
 
 entity lighting is
 
@@ -32,10 +33,26 @@ architecture Behavioral of lighting is
     
     
     signal data2: unsigned(23 downto 0) := "101111110101011111111111"; --"111111111111111111111111";
-    signal step: unsigned(7 downto 0) := "00000000";
+    signal step1: integer := 0; --std_logic_vector(15 downto 0) := "00000000";
+    signal step2: integer := 0; --std_logic_vector(15 downto 0) := "00000000";
     
+    signal long: integer := 25000000;--43; --std_logic_vector(15 downto 0) := "00000000";
+    signal short: integer := 1000000; --std_logic_vector(15 downto 0) := "00000000";
+
+
+    signal rot: integer := 0;
+
+    signal ct: integer := 0;
+
+    signal ct2: integer := 0;
     
+
+
+
+
     
+    -- 0.85e-6/(1/50e6) = 43
+    -- 0.4e-6/(1/50e6) = 20
     
     --signal sleep: 
  
@@ -45,31 +62,53 @@ architecture Behavioral of lighting is
         begin
 
             if rising_edge(CLK_50MHz) then
+           
+                ct <= ct + 1;
+                
+                if ct2 = 0 then
+                
+                    if data2(0) = '0' then
+                        if ct > short then
+                            ct2 <= 1;
+                            LED <= '0';
+                            ct <= 0;
+                        else 
+                            LED <= '1';
+                        end if;
+                    else
+                        if ct > long then
+                            ct2 <= 1;
+                            LED <= '0';
+                            ct <= 0;                            
+                        else
+                            LED <= '1';
+                        end if;
+                    end if;
+                                        
+                else 
+                   
+                    if data2(0) = '0' then
+                        if ct > long then
+                            ct <= 0;
+                            ct2 <= 0;
+                            data2 <= rotate_right(data2,1);
+                        else 
+                            LED <= '0';
+                        end if;
+                    else
+                        if ct > short then
+                            ct <= 0;
+                            ct2 <= 0;
+                            data2 <= rotate_right(data2,1);
+                        else
+                            LED <= '0';
+                        end if;
+                    end if;                
+                end if;    
             
-               if Counter < clk_val then
-                  Counter <= Counter + 1;
-               else
-               
-                  Counter <= (others => '0');          
-                  data2 <= rotate_right(data2,1);
-                  LED <=  data2(0);
-                  --step  <= step + 1;
-                  
-               end if;
-
             end if;
-            
-            --if data & '1' = 1 then
-            --    Counter <= Counter + 1;
-            --else
-            --    Counter <= Counter + 1;
-            --      data <= signed(10) sll 2;
-            --
-            ---end if;
             
       
         end process Prescaler;
-
-        --LED <= hz1;
 
 end Behavioral;
