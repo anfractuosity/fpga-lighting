@@ -67,43 +67,41 @@ architecture Behavioral of lighting is
                 
                 if ct2 = 0 then
                 
+                    LED <= '1';
+
+                
                     if data2(0) = '0' then
                         if ct > short then
                             ct2 <= 1;
                             LED <= '0';
                             ct <= 0;
-                        else 
-                            LED <= '1';
                         end if;
                     else
                         if ct > long then
                             ct2 <= 1;
                             LED <= '0';
                             ct <= 0;                            
-                        else
-                            LED <= '1';
                         end if;
-                    end if;
+                    end if;    
                                         
                 else 
                    
+                    LED <= '0';
+
                     if data2(0) = '0' then
                         if ct > long then
                             ct <= 0;
                             ct2 <= 0;
                             data2 <= rotate_right(data2,1);
-                        else 
-                            LED <= '0';
                         end if;
                     else
                         if ct > short then
                             ct <= 0;
                             ct2 <= 0;
                             data2 <= rotate_right(data2,1);
-                        else
-                            LED <= '0';
                         end if;
-                    end if;                
+                    end if;  
+                                  
                 end if;    
             
             end if;
