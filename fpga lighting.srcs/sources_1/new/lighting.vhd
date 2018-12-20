@@ -25,11 +25,11 @@ architecture Behavioral of lighting is
     constant t1l : real := 35.0e-6;
     constant res : real := 50.0e-6;    
     
-    signal data2: unsigned(23 downto 0) := "101111110101011111111111"; -- each LED is 24 bits, we output the same bitstream to all LEDs
+    signal data2: unsigned(23 downto 0) := "111111110000000000000000"; -- each LED is 24 bits, we output the same bitstream to all LEDs
 
-    signal long: integer := 45;
-    signal short: integer := 18;
-    signal refresh: integer := 2500;
+    signal long: integer := 113;
+    signal short: integer := 44;
+    signal refresh: integer := 6250;
 
 
     signal ct: integer := 0;  -- Tracks the length of the high or low
@@ -67,7 +67,7 @@ architecture Behavioral of lighting is
                         ct <= 0;
                         ct2 <= ct2 + 1;
                                      
-                        if ct2 = 24 then
+                        if ct2 = 23 then
                             ct2 <= 0;
                             ct3 <= ct3 + 1;
                         end if;
