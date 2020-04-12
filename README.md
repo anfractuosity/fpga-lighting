@@ -2,6 +2,14 @@
 
 First attempt at VHDL, creating a driver for lighting strips
 
+Ran vivado with the following, as I didn't have enough space in /tmp, when running a simulation causing it to crash:
+
+```
+TMPDIR=/opt/tmp/ ./vivado 
+```
+
+(-tempDir vivado argument, didn't seem to have any effect for me)
+
 # To Do
 
 * Implement SPI
