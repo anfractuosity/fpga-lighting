@@ -19,14 +19,16 @@ end lighting;
 
 architecture Behavioral of lighting is
 
-    constant size: integer := 60*5;  -- Tracks the length of the high or low
+    constant tp_clock: real := 1.0/125e6; -- Get time period, for 125MHz clock
+    constant size: integer := 60*5;       -- Number of LEDs
+    
     type ram1 is array(0 to size*2) of std_logic_vector(0 to 23);
     signal RAM_1 : ram1 := (others => "111111110000000011111111");
     signal led_bits: std_logic_vector(0 to 23) := "000000000000000000000000"; -- each LED is 24 bits, we output the same bitstream to all LEDs
     
-    signal long: integer := 113;         -- long duration, measured in clock pulses, 0.4us
-    signal short: integer := 44;         -- short duration, measured in clock pulses, 0.85us
-    signal refresh: integer := 6250;     -- refresh duration, when strip is driven low, 50us 
+    signal long: integer := integer(0.4e-6 / tp_clock);         -- long duration, measured in clock pulses, 0.4us
+    signal short: integer := integer(0.85e-6 / tp_clock);       -- short duration, measured in clock pulses, 0.85us
+    signal refresh: integer := integer(50.0e-6 / tp_clock);     -- refresh duration, when strip is driven low, 50us 
     
     signal clock_counter: integer := 0;    -- Counts clock pulses
     signal led_bit_counter: integer := 0;  -- Counts the Nth bit of an LED's colour data (24 bits total)
