@@ -10,6 +10,9 @@ TMPDIR=/opt/tmp/ ./vivado
 
 (-tempDir vivado argument, didn't seem to have any effect for me)
 
+Use shift+F2 to run the simulation, note the play button without '(T)' next to it, will run the 
+simulation endlessly.
+
 # To Do
 
 * Implement SPI
