@@ -1,16 +1,12 @@
 library IEEE;
-
 use IEEE.NUMERIC_STD.ALL;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.MATH_REAL.ALL;
 use IEEE.MATH_REAL;
-USE ieee.numeric_std.ALL; 
 
 entity lighting is
 
 port (
-    spi_clk: in std_logic;
-    spi_in: in std_logic;
     clk: in std_logic;
     strip_1: out std_logic
 );
@@ -18,109 +14,66 @@ port (
 end lighting;
 
 architecture Behavioral of lighting is
+    
+    constant size: integer := 60 * 4;         -- Number of LEDs
+    constant tp_clock: real := 1.0 / 125.0e6; -- Get time period, for 125MHz clock
+    
+    signal data2: unsigned(23 downto 0) := "000000000000000011111111"; -- each LED is 24 bits, we output the same bitstream to all LEDs
 
-    constant tp_clock: time := 1 sec / 125e6; -- Get time period, for 125MHz clock
-    constant size: integer := 60*5;           -- Number of LEDs
-    
-    type ram is array(0 to size*2) of std_logic_vector(0 to 23); -- allocate BRAM for double buffering
-    signal vram : ram := (others => "111111110000000011111111"); -- initialise 
-    
-    signal led_bits: std_logic_vector(0 to 23) := "000000000000000000000000"; -- each LED is 24 bits, we output the same bitstream to all LEDs
-    
-    signal long: integer := time(0.4us) / tp_clock;    -- long duration, measured in clock pulses, 0.4us
-    signal short: integer := time(0.85us) / tp_clock;  -- short duration, measured in clock pulses, 0.85us
-    signal refresh: integer := time(50us) / tp_clock;  -- refresh duration, when strip is driven low, 50us 
-    
+    signal long: integer := integer(0.85e-6 / tp_clock);       -- long duration
+    signal short: integer := integer(0.4e-6 / tp_clock);       -- short duration
+    signal refresh: integer := integer((74.0e-6) / tp_clock);  -- refresh duration, when strip is driven low, MUST be ABOVE 50uS
+     
     signal clock_counter: integer := 0;    -- Counts clock pulses
     signal led_bit_counter: integer := 0;  -- Counts the Nth bit of an LED's colour data (24 bits total)
-    signal led_counter: integer := 0;      -- LED number we're sending data for
-    
-    signal spi_counter: integer := 0;         -- Counts the bit from SPI for the Nth bit of a single LED 
-    signal spi_frame_counter: integer := 0;   -- Data for the Nth LED
-    signal spi_data: std_logic_vector(0 to 23) := "000000000000000000000000";
-    
-    signal vram_part: bit := '0';            -- Writing SPI data, to first or second part of BRAM
-    signal vram_part_tmp: bit := '0';        -- mirrors above, for choosing where to read from BRAM
-    
+    signal led_counter: integer := 0;      -- LED number we're sending data for    
+    signal pulse: integer := 0; -- Keeps track if we are outputting a high
+
+
     begin
-        
-        SPI: process(spi_clk)
-        begin
-            if rising_edge(spi_clk) then
-                
-                if spi_counter = 23 then
-                
-                    -- We have a double buffer, write to different part of BRAM
-                    if vram_part = '0' then
-                        vram(spi_frame_counter) <= spi_data(0 to 22) & spi_in  ;
-                    else
-                        vram(spi_frame_counter+size) <= spi_data(0 to 22) & spi_in  ;
-                    end if;
-                    
-                    -- Check if we've reached end of data from SPI
-                    if spi_frame_counter = size then
-                        spi_frame_counter <= 0;
-                        vram_part <= vram_part xor '1';
-                    else
-                        spi_frame_counter <= spi_frame_counter + 1; 
-                    end if;
-                    
-                    -- Clear variable storing data from SPI
-                    spi_data <= "000000000000000000000000";
-                    spi_counter <= 0;
-                else 
-                    -- Capture 24 bits from SPI
-                    spi_data(spi_counter) <= spi_in;   
-                    spi_counter <= spi_counter + 1;
-                end if;
-                
-            end if;
-        end Process SPI;
-        
 
         Prescaler: process(clk)
         begin
+
             if rising_edge(clk) then
             
-                -- Counting clock edges
                 clock_counter <= clock_counter + 1;
-            
-                if vram_part_tmp = '0' then
-                    led_bits <= vram(led_counter+size) ;
-                else
-                    led_bits <= vram(led_counter)  ;
-                end if;
-                                  
-                -- Check if we've reached end of LED strip
+                
                 if led_counter = size then
-                    -- Check if we have finished refresh duration
                     if clock_counter > refresh then
                         clock_counter <= 0;
                         led_counter <= 0;
-                        vram_part_tmp <= vram_part;
                     else
                         strip_1 <= '0';                    
                     end if;                
                 else
-                    -- Check if at the end of a WS2812B '0' or '1'
+                
+                    if data2(led_bit_counter) = '0' then
+                        pulse <= short;
+                    else
+                        pulse <= long;
+                    end if;
+                                
                     if clock_counter > short+long then
+                    
+                        clock_counter <= 0;
+                        led_bit_counter <= led_bit_counter + 1;
+                                     
                         if led_bit_counter = 23 then
                             led_bit_counter <= 0;
                             led_counter <= led_counter + 1;
-                        else 
-                            led_bit_counter <= led_bit_counter + 1; 
                         end if;
-                        clock_counter <= 0;
-                    elsif led_bits(led_bit_counter) = '0' and clock_counter > short then
-                        strip_1 <= '0';
-                    elsif led_bits(led_bit_counter) = '1' and clock_counter > long then
+                                     
+                    elsif clock_counter > pulse then
                         strip_1 <= '0';
                     else
                         strip_1 <= '1';
                     end if;     
                                 
-                end if;        
+                end if;    
+                           
             end if;      
+      
         end process Prescaler;
 
 end Behavioral;

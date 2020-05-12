@@ -17,7 +17,7 @@ signal toggle: std_logic := '0';
 
 begin
 
-    UUT : entity work.lighting port map (spi_clk => spi_clk,spi_in => spi_in,clk=>clk,strip_1=>strip_1);
+    UUT : entity work.lighting port map (clk=>clk,strip_1=>strip_1); --,spi_clk=>spi_clk,spi_in=>spi_in);
 
     test_proc: process
     begin
@@ -27,15 +27,15 @@ begin
         clk <= '0';
     end process;
     
-    test_spi: process
-    begin
-        wait for 8 ns;
-        spi_clk <= '1';
-        toggle <= toggle xor '1';
-        spi_in <= toggle;
-        wait for 8 ns;
-        spi_clk <= '0';
-    end process;
+--    test_spi: process
+--    begin
+--        wait for 8 ns;
+--        spi_clk <= '1';
+--        toggle <= toggle xor '1';
+--        spi_in <= toggle;
+--        wait for 8 ns;
+--        spi_clk <= '0';
+--    end process;
 
 
 end Behavioral;
